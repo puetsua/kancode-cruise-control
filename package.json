@@ -26,11 +26,7 @@
   "exports": {
     "./server": {
       "types": "./dist/server.d.ts",
-      "import": "./dist/server.js",
-      "config": {
-        "timeout_ms": 8000,
-        "retries": 3
-      }
+      "import": "./dist/server.js"
     }
   },
   "files": [
