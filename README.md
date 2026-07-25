@@ -89,6 +89,20 @@ Requires a KanCode host that provides the plugin model capability (`input.model`
 
 This package has **no runtime dependencies**. The host contract is mirrored as types in `src/host.ts`.
 
+## Releasing
+
+Tag a semver version with no `v` prefix; `.github/workflows/release.yml` builds,
+tests, verifies both entries load under real Node, and publishes via npm trusted
+publishing (OIDC — no token stored in the repo).
+
+```bash
+npm version 0.1.1 --no-git-tag-version
+git commit -am "release: 0.1.1" && git tag 0.1.1 && git push --follow-tags
+```
+
+The workflow fails if the tag and `package.json` version disagree. Use the
+`workflow_dispatch` trigger for a dry run.
+
 ## License
 
 MIT

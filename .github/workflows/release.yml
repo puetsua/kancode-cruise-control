@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    tags:
+      # Semver without a `v` prefix, matching the KanCode release line.
+      - "[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build, test, and pack without publishing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  # Required for npm trusted publishing (OIDC). No NPM_TOKEN is used.
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ vars.BUN_VERSION || '1.3.14' }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      # OIDC trusted publishing needs npm 11.5.1+; Node 22 ships older.
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Test
+        run: bun test
+
+      - name: Build
+        run: bun run build
+
+      - name: Verify tag matches package version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "Tag $tag does not match package.json version $pkg" >&2
+            exit 1
+          fi
+
+      # The host import()s the built entrypoint. Bundler-style resolution emits
+      # extensionless specifiers that Bun tolerates and Node rejects, so prove
+      # both entries load under real Node before anything is published.
+      - name: Verify built entries load under Node
+        run: |
+          node --input-type=module -e "
+            const server = await import('./dist/server.js')
+            const tui = await import('./dist/tui.js')
+            if (typeof server.default?.server !== 'function') throw new Error('server entry is malformed')
+            if (typeof tui.default?.tui !== 'function') throw new Error('tui entry is malformed')
+            if ('tui' in server.default) throw new Error('server entry must not export tui')
+            if ('server' in tui.default) throw new Error('tui entry must not export server')
+          "
+
+      - name: Pack
+        run: npm pack --dry-run
+
+      - name: Publish
+        if: startsWith(github.ref, 'refs/tags/') && inputs.dry_run != true
+        run: npm publish --access public --provenance
