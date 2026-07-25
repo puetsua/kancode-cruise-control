@@ -1,4 +1,4 @@
-# @puetsua/kancode-cruise-control
+# @kancode/cruise-control
 
 An LLM permission classifier for [KanCode](https://github.com/puetsua/kancode). It rates each gated tool action for **risk** and **user intent**, then auto-allows or denies — so routine work proceeds without prompting while anything unclear still reaches you.
 
@@ -7,14 +7,14 @@ Registers the permission module id `cruise_control`.
 ## Install
 
 ```bash
-kancode plugin @puetsua/kancode-cruise-control
+kancode plugin @kancode/cruise-control
 ```
 
 Or add it to `kancode.json` yourself:
 
 ```jsonc
 {
-  "plugin": ["@puetsua/kancode-cruise-control"],
+  "plugin": ["@kancode/cruise-control"],
   "permission": { "bash": "cruise_control", "edit": "cruise_control" },
   "permission_modules": {
     "cruise_control": { "model": "opencode/deepseek-v4-flash" }
@@ -102,6 +102,11 @@ git commit -am "release: 0.1.1" && git tag 0.1.1 && git push --follow-tags
 
 The workflow fails if the tag and `package.json` version disagree. Use the
 `workflow_dispatch` trigger for a dry run.
+
+## Previous name
+
+Published as `@puetsua/kancode-cruise-control` through 0.1.1. That name is
+deprecated; nothing else changed.
 
 ## License
 
