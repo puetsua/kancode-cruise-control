@@ -24,6 +24,19 @@ Or add it to `kancode.json` yourself:
 
 A model **must** be configured. Without one the module asks you to approve manually and hints at `/cruise-control-model`; it never silently allows.
 
+## `/cruise-control-model`
+
+The plugin also registers a TUI command to pick the classifier model, so it
+appears exactly when the classifier it configures is installed:
+
+```
+/cruise-control-model
+```
+
+It shows the current model, opens KanCode's own provider/model picker, and
+writes your choice to `permission_modules.cruise_control.model` in global config.
+Bind it with the `permission_cruise_control_model` keybind slot.
+
 ## How a decision is made
 
 Evaluation short-circuits in this order, so most decisions never reach the model:
