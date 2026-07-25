@@ -14,11 +14,17 @@ describe("published package shape", () => {
   })
 
   test("files allowlist covers every exported path", () => {
-    const targets = Object.values(pkg.exports as Record<string, Record<string, string>>).flatMap((entry) =>
-      Object.values(entry),
+    const entries = pkg.exports as Record<string, string | Record<string, string>>
+    const targets = Object.values(entries).flatMap((entry) =>
+      typeof entry === "string" ? [entry] : Object.values(entry),
     )
     expect(targets.length).toBeGreaterThan(0)
-    for (const target of targets) expect(target.startsWith("./dist/")).toBe(true)
+    for (const target of targets) {
+      // npm always ships package.json regardless of `files`; everything else must
+      // live under the allowlisted dist/ or it is exported but not published.
+      if (target === "./package.json") continue
+      expect(target.startsWith("./dist/")).toBe(true)
+    }
     expect(pkg.files).toEqual(["dist"])
   })
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@puetsua/kancode-cruise-control",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Cruise Control: an LLM permission classifier for KanCode. Rates pending tool actions for risk and user intent, then auto-allows or denies with fail-closed safety rails.",
   "license": "MIT",
   "type": "module",
@@ -35,7 +35,8 @@
     "./tui": {
       "types": "./dist/tui.d.ts",
       "import": "./dist/tui.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist"
