@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@puetsua/kancode-cruise-control",
+  "version": "0.1.0",
+  "description": "Cruise Control: an LLM permission classifier for KanCode. Rates pending tool actions for risk and user intent, then auto-allows or denies with fail-closed safety rails.",
+  "license": "MIT",
+  "type": "module",
+  "author": "Puetsua",
+  "homepage": "https://github.com/puetsua/kancode-cruise-control",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/puetsua/kancode-cruise-control.git"
+  },
+  "bugs": {
+    "url": "https://github.com/puetsua/kancode-cruise-control/issues"
+  },
+  "keywords": [
+    "kancode",
+    "kancode-plugin",
+    "permission",
+    "classifier",
+    "cruise-control"
+  ],
+  "main": "./dist/server.js",
+  "types": "./dist/server.d.ts",
+  "exports": {
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js",
+      "config": {
+        "timeout_ms": 8000,
+        "retries": 3
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "opencode": ">=1.18.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "bun test",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.13",
+    "typescript": "5.9.2"
+  }
+}
