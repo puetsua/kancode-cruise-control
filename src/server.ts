@@ -1,7 +1,8 @@
-import { createCruiseControlPlugin, CRUISE_CONTROL } from "./index"
+import { createCruiseControlPlugin, CRUISE_CONTROL } from "./index.js"
+import type { PluginModule } from "./host.js"
 
 export { CRUISE_CONTROL }
-export type { ClassifierLogger } from "./classifier"
+export type { ClassifierLogger } from "./classifier.js"
 
 /**
  * KanCode server plugin entry.
@@ -12,4 +13,4 @@ export type { ClassifierLogger } from "./classifier"
 export default {
   id: "puetsua.cruise-control",
   server: createCruiseControlPlugin(),
-}
+} satisfies PluginModule

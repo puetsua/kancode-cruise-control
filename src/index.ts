@@ -1,5 +1,5 @@
-import type { Hooks, Plugin, PluginInput } from "./host"
-import { clearDynamicLists, decideCruiseControl, type ClassifierLogger, type PermissionModuleSchema } from "./classifier"
+import type { Hooks, Plugin, PluginInput } from "./host.js"
+import { clearDynamicLists, decideCruiseControl, type ClassifierLogger, type PermissionModuleSchema } from "./classifier.js"
 
 /** Module id this plugin registers. Matches `permission_modules.cruise_control`. */
 export const CRUISE_CONTROL = "cruise_control"

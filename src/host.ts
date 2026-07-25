@@ -81,3 +81,34 @@ export type Hooks = {
 }
 
 export type Plugin = (input: PluginInput) => Promise<Hooks>
+
+/**
+ * Shape the host's `readV1Plugin` validates. A module must export `server` OR
+ * `tui`, never both. Mirrored so `server.ts` can `satisfies` it and a contract
+ * change becomes a build failure rather than a load failure after publish.
+ */
+export type PluginModule = {
+  id?: string
+  server: Plugin
+  tui?: never
+}
+
+/** Non-retryable codes; the caller must not retry these. */
+export type ModelErrorCode =
+  | "model_unset"
+  | "model_not_found"
+  | "auth"
+  | "timeout"
+  | "aborted"
+  | "no_object"
+  | "rate_limit"
+  | "provider_error"
+  | "budget"
+  | "unavailable"
+
+export interface ModelGenerateError extends Error {
+  readonly name: "ModelGenerateError"
+  readonly code: ModelErrorCode
+  readonly retryable: boolean
+  readonly text?: string
+}

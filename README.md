@@ -28,7 +28,7 @@ A model **must** be configured. Without one the module asks you to approve manua
 
 Evaluation short-circuits in this order, so most decisions never reach the model:
 
-1. **Destructive deny** — `rm -rf`, `DROP DATABASE`, `TRUNCATE`, force-push to main, `mkfs`, `dd of=/dev/…`.
+1. **Destructive deny** — `rm -rf`, `DROP DATABASE`, `TRUNCATE`, force-push to main, `mkfs`, `dd of=/dev/…`. This is a pattern-matched backstop for common forms, not a sandbox: obfuscated equivalents can slip past it, so the model and your `allowlist` remain the real controls.
 2. **Managed app directories** — `external_directory` inside KanCode's own config/data/cache/state/tmp roots.
 3. **Session-scoped todo / rename** — session state, not filesystem writes.
 4. **Per-prompt cache** — decisions learned earlier in the same turn (deny wins over allow).
@@ -72,7 +72,7 @@ If the plugin is missing or fails to install, KanCode degrades to asking you nor
 
 ## Compatibility
 
-Requires a KanCode host providing the plugin model capability (`engines.opencode >= 1.18.0`). Older hosts skip the plugin with a warning rather than loading it.
+Requires a KanCode host that provides the plugin model capability (`input.model`) and `permission.registerModule`. No `engines` gate is declared: KanCode's compatibility check is skipped entirely for `0.x` hosts, so a range there would be inert today and misleading tomorrow. On a host without the capability the module registers but every decision fails closed to deny.
 
 This package has **no runtime dependencies**. The host contract is mirrored as types in `src/host.ts`.
 

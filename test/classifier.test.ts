@@ -403,3 +403,80 @@ describe("decideCruiseControl", () => {
     expect(outcome.reason).toBe("fenced")
   })
 })
+
+describe("regression guards", () => {
+  test("explicit approval is not cached for later identical actions", async () => {
+    clearDynamicLists()
+    const scope = "w\0s\0p"
+    let calls = 0
+    const shared = {
+      paths: PATHS,
+      permission: "bash",
+      patterns: ["npm publish"],
+      opts: { allowlist: ["bash"], timeout_ms: 1000, classify_gap_ms: 0 },
+      cacheScope: scope,
+      classify: async () => {
+        calls += 1
+        return { risk: "high" as const, intent: "low" as const, reason: "irreversible" }
+      },
+    }
+    const envelope = [
+      "<conversation_context>",
+      "<prior_assistant_reply>",
+      "May I run npm publish for this package?",
+      "</prior_assistant_reply>",
+      "<current_user_reply>",
+      "yes",
+      "</current_user_reply>",
+      "</conversation_context>",
+    ].join("\n")
+
+    expect((await runClassifier({ ...shared, approvalPrompt: envelope })).decision).toBe("allow")
+    expect(calls).toBe(0)
+    // Same action later in the turn, with no approval: must reclassify and deny.
+    expect((await runClassifier(shared)).decision).toBe("deny")
+    expect(calls).toBe(1)
+  })
+
+  test("approval matching ignores incidental substrings", () => {
+    const envelope = (assistant: string) =>
+      [
+        "<conversation_context>",
+        "<prior_assistant_reply>",
+        assistant,
+        "</prior_assistant_reply>",
+        "<current_user_reply>",
+        "ok",
+        "</current_user_reply>",
+        "</conversation_context>",
+      ].join("\n")
+    expect(explicitApprovalIntent(envelope("May I look at the results?"), ["s"])).toBe(false)
+    expect(explicitApprovalIntent(envelope("Want me to install the deps?"), ["i"])).toBe(false)
+    expect(explicitApprovalIntent(envelope("May I run git status?"), ["git status"])).toBe(true)
+  })
+
+  test("a non-retryable model failure stops retrying immediately", async () => {
+    let calls = 0
+    const outcome = await runClassifier({
+      paths: PATHS,
+      permission: "bash",
+      patterns: ["ls"],
+      opts: { allowlist: ["bash"], timeout_ms: 1000, retries: 3, retry_interval_ms: 0, classify_gap_ms: 0 },
+      classify: async () => {
+        calls += 1
+        throw Object.assign(new Error("Model not found"), {
+          name: "ModelGenerateError",
+          code: "model_not_found",
+          retryable: false,
+        })
+      },
+    })
+    expect(calls).toBe(1)
+    expect(outcome.decision).toBe("deny")
+  })
+
+  test("a blank managed root contains nothing", () => {
+    const blank = { config: "", data: "", cache: "", state: "", tmp: "" }
+    expect(isManagedAppDirectoryPattern(path.join(process.cwd(), "src"), blank)).toBe(false)
+  })
+})
